@@ -9,6 +9,8 @@ set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
 set(SRCS
     src/main.cpp
+    src/VideoSource.cpp
+    src/Display.cpp
 )
 
 find_package( OpenCV REQUIRED CONFIG)
