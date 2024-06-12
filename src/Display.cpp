@@ -13,8 +13,7 @@ bool Display::show(cv::Mat& frame, cv::Mat& faces, double fps) {
     // Visualize results
     cv::imshow("Stream", result);
 
-    int delay = fps > 60 ? 30 : 1;
-    int key = cv::waitKey(delay);
+    int key = cv::waitKey(1);
     
     if (key > 0) return true;
     return false;

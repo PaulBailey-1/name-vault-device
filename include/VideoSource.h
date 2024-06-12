@@ -48,11 +48,12 @@ private:
 class FileVideoSource : public VideoSource {
 public:
 
-    FileVideoSource(std::string path);
+    FileVideoSource(std::string path, int frameRate);
     std::unique_ptr<cv::Mat> getFrame() override;
 
 private:
 
     cv::VideoCapture _cap;
+    int _frameRate;
 
 };

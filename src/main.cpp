@@ -38,7 +38,7 @@ int main(int argc, char** argv) {
         #ifdef CROSSCOMPILING
             source = new LibCameraVideoSource(640, 480);
         #else
-            source = new FileVideoSource(parser.get<std::string>("video"));
+            source = new FileVideoSource(parser.get<std::string>("video"), 30);
         #endif
     } catch (std::runtime_error& e) {
         std::cout << "Error - " << e.what() << std::endl;
@@ -63,17 +63,19 @@ int main(int argc, char** argv) {
         cv::Mat faces;
         tm.start();
         
-        detector->detect(*frame, faces);
+        if (nFrame % 1 == 0) {
+            detector->detect(*frame, faces);
 
-        // Aligning and cropping facial image through the first face of faces detected.
-        if (faces.rows > 0) {
-            cv::Mat aligned_face;
-            faceRecognizer->alignCrop(*frame, faces.row(0), aligned_face);
+            // Aligning and cropping facial image through the first face of faces detected.
+            if (faces.rows > 0) {
+                cv::Mat aligned_face;
+                faceRecognizer->alignCrop(*frame, faces.row(0), aligned_face);
 
-            // Run feature extraction with given aligned_face
-            cv::Mat feature;
-            faceRecognizer->feature(aligned_face, feature);
-            feature = feature.clone();
+                // Run feature extraction with given aligned_face
+                cv::Mat feature;
+                faceRecognizer->feature(aligned_face, feature);
+                feature = feature.clone();
+            }
         }
 
         tm.stop();

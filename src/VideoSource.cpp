@@ -43,7 +43,8 @@ void LibCameraVideoSource::returnFrame() {
 
 #endif
 
-FileVideoSource::FileVideoSource(std::string path) {
+FileVideoSource::FileVideoSource(std::string path, int frameRate) {
+    _frameRate = frameRate;
     _cap.open(path);
     if (_cap.isOpened()) {
         _frameWidth = _cap.get(cv::CAP_PROP_FRAME_WIDTH);
@@ -56,6 +57,7 @@ FileVideoSource::FileVideoSource(std::string path) {
 
 std::unique_ptr<cv::Mat> FileVideoSource::getFrame() {
     std::unique_ptr<cv::Mat> frame = std::unique_ptr<cv::Mat>(new cv::Mat());
+    std::this_thread::sleep_for(std::chrono::milliseconds(1000 / _frameRate));
     if (!_cap.read(*frame)) {
         throw std::runtime_error("FileVideoSource: Can't grab frame");
     }
