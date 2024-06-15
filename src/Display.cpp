@@ -1,17 +1,17 @@
 
 #include <iostream>
+#include <stdio.h>
 
 #include "Display.h"
 
 Display::Display() {}
 
-bool Display::show(cv::Mat& frame, cv::Mat& faces, double fps) {
-    cv::Mat result = frame.clone();
+bool Display::show(cv::Mat& frame, std::vector<Detection>& detections, double fps) {
     // Draw results on the input image
-    visualize(result, faces, fps);
+    visualize(frame, detections, fps);
 
     // Visualize results
-    cv::imshow("Stream", result);
+    cv::imshow("Stream", frame);
 
     int key = cv::waitKey(1);
     
@@ -19,25 +19,18 @@ bool Display::show(cv::Mat& frame, cv::Mat& faces, double fps) {
     return false;
 }
 
-void Display::visualize(cv::Mat& input, cv::Mat& faces, double fps, int thickness) {
+void Display::visualize(cv::Mat& input, std::vector<Detection>& detections, double fps) {
     std::string fpsString = cv::format("FPS : %.2f", (float)fps);
-    for (int i = 0; i < faces.rows; i++)
-    {
+    for (Detection d : detections) {
         // Print results
-        std::cout << "Face " << i
-             << ", top-left coordinates: (" << faces.at<float>(i, 0) << ", " << faces.at<float>(i, 1) << "), "
-             << "box width: " << faces.at<float>(i, 2)  << ", box height: " << faces.at<float>(i, 3) << ", "
-             << "score: " << cv::format("%.2f", faces.at<float>(i, 14))
-             << std::endl;
+        printf("Detection of %s, score: %f\n", d.label, d.score);
 
         // Draw bounding box
-        rectangle(input, cv::Rect2i(int(faces.at<float>(i, 0)), int(faces.at<float>(i, 1)), int(faces.at<float>(i, 2)), int(faces.at<float>(i, 3))), cv::Scalar(0, 255, 0), thickness);
-        // Draw landmarks
-        circle(input, cv::Point2i(int(faces.at<float>(i, 4)), int(faces.at<float>(i, 5))), 2, cv::Scalar(255, 0, 0), thickness);
-        circle(input, cv::Point2i(int(faces.at<float>(i, 6)), int(faces.at<float>(i, 7))), 2, cv::Scalar(0, 0, 255), thickness);
-        circle(input, cv::Point2i(int(faces.at<float>(i, 8)), int(faces.at<float>(i, 9))), 2, cv::Scalar(0, 255, 0), thickness);
-        circle(input, cv::Point2i(int(faces.at<float>(i, 10)), int(faces.at<float>(i, 11))), 2, cv::Scalar(255, 0, 255), thickness);
-        circle(input, cv::Point2i(int(faces.at<float>(i, 12)), int(faces.at<float>(i, 13))), 2, cv::Scalar(0, 255, 255), thickness);
+        cv::Rect rec((int)d.x1, (int)d.y1, (int)(d.x2 - d.x1), (int)(d.y2 - d.y1));
+        rectangle(input, rec, cv::Scalar(0, 0, 255), 2);
+        // Draw label
+        putText(input, cv::format("%s", d.label), cv::Point2i(d.x1, d.y1-5), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 0, 255), 1);
+
     }
     putText(input, fpsString, cv::Point(0, 15), cv::FONT_HERSHEY_SIMPLEX, 0.5, cv::Scalar(0, 255, 0), 2);
 }

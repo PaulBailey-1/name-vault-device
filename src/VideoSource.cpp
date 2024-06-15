@@ -16,7 +16,7 @@ LibCameraVideoSource::LibCameraVideoSource(int width, int height) {
     if (_cam.initCamera()) {
         throw std::runtime_error("LibCameraVideoSource:Could not initialize libcamera");
     }
-    _cam.configureStill(width, height, libcamera::formats::RGB888, 1, 0);
+    _cam.configureStream(width, height, libcamera::formats::RGB888, 1, 0);
 
     std::cout << "Starting camera\n";
     _cam.startCamera();
@@ -30,11 +30,16 @@ LibCameraVideoSource::~LibCameraVideoSource() {
     _cam.closeCamera();
 }
 
-std::unique_ptr<cv::Mat> LibCameraVideoSource::getFrame() {
+void LibCameraVideoSource::getFrame(cv::Mat& frame) {
+    int count = 0;
     while (!_cam.readFrame(&_frameData)) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
+        count++;
     }
-    return std::unique_ptr<cv::Mat>(new cv::Mat(_frameHeight, _frameWidth, CV_8UC3, _frameData.imageData, _stride));
+    std::cout << "Slept " << count << std::endl;
+    // _frameData.imageData is non-modifiable, remove clone if no display
+    frame = cv::Mat(_frameHeight, _frameWidth, CV_8UC3, _frameData.imageData, _stride).clone();
+    _cam.returnFrameBuffer(_frameData);
 }
 
 void LibCameraVideoSource::returnFrame() {
@@ -55,11 +60,9 @@ FileVideoSource::FileVideoSource(std::string path, int frameRate) {
     }
 }
 
-std::unique_ptr<cv::Mat> FileVideoSource::getFrame() {
-    std::unique_ptr<cv::Mat> frame = std::unique_ptr<cv::Mat>(new cv::Mat());
+void FileVideoSource::getFrame(cv::Mat& frame) {
     std::this_thread::sleep_for(std::chrono::milliseconds(1000 / _frameRate));
-    if (!_cap.read(*frame)) {
+    if (!_cap.read(frame)) {
         throw std::runtime_error("FileVideoSource: Can't grab frame");
     }
-    return frame;
 }

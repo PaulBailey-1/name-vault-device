@@ -14,7 +14,7 @@ public:
 
     virtual ~VideoSource() {}
     cv::Size getSize();
-    virtual std::unique_ptr<cv::Mat> getFrame() = 0;
+    virtual void getFrame(cv::Mat& frame) = 0;
     virtual void returnFrame() {}
 
 protected:
@@ -31,7 +31,7 @@ public:
 
     LibCameraVideoSource(int width, int height);
     ~LibCameraVideoSource();
-    std::unique_ptr<cv::Mat> getFrame() override;
+    void getFrame(cv::Mat& frame) override;
     void returnFrame() override;
 
 private:
@@ -49,7 +49,7 @@ class FileVideoSource : public VideoSource {
 public:
 
     FileVideoSource(std::string path, int frameRate);
-    std::unique_ptr<cv::Mat> getFrame() override;
+    void getFrame(cv::Mat& frame) override;
 
 private:
 

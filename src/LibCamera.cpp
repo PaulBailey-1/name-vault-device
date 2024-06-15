@@ -35,9 +35,9 @@ std::string LibCamera::getCameraId(){
     return cameraId;
 }
 
-void LibCamera::configureStill(int width, int height, PixelFormat format, int buffercount, int rotation) {
-    printf("Configuring still capture...\n");
-    config_ = camera_->generateConfiguration({ StreamRole::StillCapture });
+void LibCamera::configureStream(int width, int height, PixelFormat format, int buffercount, int rotation) {
+    printf("Configuring stream capture...\n");
+    config_ = camera_->generateConfiguration({ StreamRole::Raw });
     if (width && height) {
         libcamera::Size size(width, height);
         config_->at(0).size = size;
@@ -61,7 +61,7 @@ void LibCamera::configureStill(int width, int height, PixelFormat format, int bu
 	else if (validation == CameraConfiguration::Adjusted)
         std::cout << "Stream configuration adjusted" << std::endl;
 
-    printf("Still capture setup complete\n");
+    printf("Still capture stream complete\n");
 }
 
 int LibCamera::startCamera() {
@@ -91,6 +91,7 @@ int LibCamera::startCapture() {
 
         unsigned int allocated = allocator_->buffers(cfg.stream()).size();
         nbuffers = std::min(nbuffers, allocated);
+        std::cout << "Allocated " << nbuffers << " buffers\n";
     }
 
     for (unsigned int i = 0; i < nbuffers; i++) {
@@ -225,7 +226,7 @@ void LibCamera::set(ControlList controls){
 
 int LibCamera::resetCamera(int width, int height, PixelFormat format, int buffercount, int rotation) {
     stopCamera();
-    configureStill(width, height, format, buffercount, rotation);
+    configureStream(width, height, format, buffercount, rotation);
     return startCamera();
 }
 
