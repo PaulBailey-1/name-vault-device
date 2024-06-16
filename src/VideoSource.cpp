@@ -12,11 +12,18 @@ cv::Size VideoSource::getSize() {
 
 #ifdef CROSSCOMPILING
 
-LibCameraVideoSource::LibCameraVideoSource(int width, int height) {
+LibCameraVideoSource::LibCameraVideoSource(int width, int height, int fps) {
     if (_cam.initCamera()) {
         throw std::runtime_error("LibCameraVideoSource:Could not initialize libcamera");
     }
     _cam.configureStream(width, height, libcamera::formats::RGB888, 1, 0);
+    libcamera::ControlList controls;
+    int64_t frame_time = 1000000 / fps;
+	controls.set(libcamera::controls::FrameDurationLimits, libcamera::Span<const int64_t, 2>({ frame_time, frame_time }));
+    // controls.set(controls::Brightness, 0.5);
+    // controls.set(controls::Contrast, 1.5);
+    // controls.set(controls::ExposureTime, 20000);
+    _cam.set(controls);
 
     std::cout << "Starting camera\n";
     _cam.startCamera();
@@ -31,12 +38,9 @@ LibCameraVideoSource::~LibCameraVideoSource() {
 }
 
 void LibCameraVideoSource::getFrame(cv::Mat& frame) {
-    int count = 0;
     while (!_cam.readFrame(&_frameData)) {
         std::this_thread::sleep_for(std::chrono::milliseconds(1));
-        count++;
     }
-    std::cout << "Slept " << count << std::endl;
     // _frameData.imageData is non-modifiable, remove clone if no display
     frame = cv::Mat(_frameHeight, _frameWidth, CV_8UC3, _frameData.imageData, _stride).clone();
     _cam.returnFrameBuffer(_frameData);

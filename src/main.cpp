@@ -16,7 +16,7 @@ int main(int argc, char** argv) {
     cv::CommandLineParser parser(argc, argv,
         "{help  h                 |            | Print this message}"
         "{video v                 | ../res/face_test.mp4 | Path to the input video}"
-        "{model_path m            | ../res/detect.tflite | Path to the model}"
+        "{model_path m            | ../res/detect_tpu.tflite | Path to the model}"
         "{labels_path l           | ../res/labels.txt | Path to the labels}"
         "{confidence_threshold c  | 0.5        | Filter out detections of score < confidence_threshold}"
         "{use_tpu t               | true       | Use Coral accelerator for object detection}"
@@ -42,7 +42,7 @@ int main(int argc, char** argv) {
     Detector detector;
     try {
         #ifdef CROSSCOMPILING
-            source = new LibCameraVideoSource(640, 480);
+            source = new LibCameraVideoSource(640, 480, 30);
         #else
             source = new FileVideoSource(parser.get<std::string>("video"), 30);
         #endif
@@ -53,7 +53,7 @@ int main(int argc, char** argv) {
     }
 
     // cv::Ptr<cv::FaceDetectorYN> detector = cv::FaceDetectorYN::create(fd_modelPath, "", source->getSize());
-    cv::Ptr<cv::FaceRecognizerSF> faceRecognizer = cv::FaceRecognizerSF::create(fr_modelPath, "");
+    // cv::Ptr<cv::FaceRecognizerSF> faceRecognizer = cv::FaceRecognizerSF::create(fr_modelPath, "");
 
     int nFrame = 0;
     while (true) {
@@ -69,7 +69,7 @@ int main(int argc, char** argv) {
         }
 
         // Inference
-        std::vector<Detection> detections;// = detector.detect(frame);
+        std::vector<Detection> detections = detector.detect(frame);
         
         // if (nFrame % 1 == 0) {
         //     detector->detect(frame, faces);
@@ -95,7 +95,6 @@ int main(int argc, char** argv) {
             std::cout << "FPS: " << tm.getFPS() << std::endl;
         }
 
-        // source->returnFrame();
         ++nFrame;
     }
 

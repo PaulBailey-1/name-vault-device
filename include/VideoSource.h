@@ -29,7 +29,7 @@ protected:
 class LibCameraVideoSource : public VideoSource {
 public:
 
-    LibCameraVideoSource(int width, int height);
+    LibCameraVideoSource(int width, int height, int fps);
     ~LibCameraVideoSource();
     void getFrame(cv::Mat& frame) override;
     void returnFrame() override;

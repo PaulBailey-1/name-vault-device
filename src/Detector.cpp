@@ -17,9 +17,9 @@ Detector::Detector(std::string modelPath, std::string labelsPath, double confide
 
     // Build the interpreter
     if (useTpu) {
-        std::shared_ptr<edgetpu::EdgeTpuContext> edgetpu_context = edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
+        _edgetpu_context = edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
         printf("Opened Coral TPU Accelerator\n");
-        _interpreter = buildEdgeTpuInterpreter(*_model, edgetpu_context.get());
+        _interpreter = buildEdgeTpuInterpreter(*_model, _edgetpu_context.get());
     } else {
         tflite::ops::builtin::BuiltinOpResolver resolver;
         tflite::InterpreterBuilder(*_model.get(), resolver)(&_interpreter);
@@ -29,9 +29,9 @@ Detector::Detector(std::string modelPath, std::string labelsPath, double confide
         if (_interpreter->AllocateTensors() != kTfLiteOk) {
             throw std::runtime_error("Detector::Detector - Failed to allocate tensors");
         }
-        _interpreter->SetAllowFp16PrecisionForFp32(true);
-        _interpreter->SetNumThreads(4);
+        _interpreter->SetNumThreads(3);
     }
+    _interpreter->SetAllowFp16PrecisionForFp32(true);
 
 	// Read labels file
 	if(!readFileContents(labelsPath, _labels)) {
@@ -48,7 +48,7 @@ std::unique_ptr<tflite::Interpreter> Detector::buildEdgeTpuInterpreter(const tfl
     }
     // Bind given context with interpreter.
     interpreter->SetExternalContext(kTfLiteEdgeTpuContext, edgetpu_context);
-    interpreter->SetNumThreads(4);
+    interpreter->SetNumThreads(3);
     if (interpreter->AllocateTensors() != kTfLiteOk) {
         throw std::runtime_error("Detector::buildEdgeTpuInterpreter - Failed to allocate tensors");
     }

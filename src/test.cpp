@@ -117,7 +117,7 @@ int main(int argc,char ** argv)
     for(i=0;i<16;i++) FPS[i]=0.0;
 
     // Load model
-    std::unique_ptr<tflite::FlatBufferModel> model = tflite::FlatBufferModel::BuildFromFile("../res/ssd_mobilenet_v2_face_quant_postprocess_edgetpu.tflite");
+    std::unique_ptr<tflite::FlatBufferModel> model = tflite::FlatBufferModel::BuildFromFile("../res/detect_tpu.tflite");
 
     // Build the interpreter
     std::shared_ptr<edgetpu::EdgeTpuContext> edgetpu_context = edgetpu::EdgeTpuManager::GetSingleton()->OpenDevice();
@@ -128,7 +128,7 @@ int main(int argc,char ** argv)
     // interpreter->AllocateTensors();
 
 	// Get the names
-	bool result = getFileContent("../res/COCO_labels.txt");
+	bool result = getFileContent("../res/labels.txt");
 	if(!result)
 	{
         cout << "loading labels failed";

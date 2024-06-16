@@ -36,6 +36,7 @@ private:
 
     std::unique_ptr<tflite::FlatBufferModel> _model;
     std::unique_ptr<tflite::Interpreter> _interpreter;
+    std::shared_ptr<edgetpu::EdgeTpuContext> _edgetpu_context;
     std::vector<std::string> _labels;
 
     double _confidenceThresh;
